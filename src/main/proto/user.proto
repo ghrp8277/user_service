@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.example.grpc";
+option java_outer_classname = "UserProto";
+
+package user;
+
+service UserService {
+    rpc CheckUsername (CheckUsernameRequest) returns (Response);
+    rpc RegisterUser (RegisterUserRequest) returns (Response);
+    rpc AuthenticateUser (AuthenticateUserRequest) returns (Response);
+    rpc UpdatePassword (UpdatePasswordRequest) returns (Response);
+    rpc findUser (FindUserRequest) returns (Response);
+    rpc UpdateProfile (UpdateProfileRequest) returns (Response);
+}
+
+message FindUserRequest {
+    uint64 userId = 1;
+}
+
+message RegisterUserRequest {
+    string username = 1;
+    string password = 2;
+    string email = 3;
+    Profile profile = 4;
+}
+
+message Profile {
+    string greeting = 1;
+    Image image = 2;
+}
+
+message Image {
+    string path = 1;
+    string originalFilename = 2;
+    string fileExtension = 3;
+    string description = 4;
+}
+
+message CheckUsernameRequest {
+    string username = 1;
+}
+
+message AuthenticateUserRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message UpdatePasswordRequest {
+    uint64 userId = 1;
+    string currentPassword = 2;
+    string newPassword = 3;
+}
+
+message UpdateProfileRequest {
+    uint64 userId = 1;
+    Profile profile = 2;
+}
+
+message Response {
+    string result = 1;
+}
