@@ -4,6 +4,10 @@ import com.example.userservice.entity.Image;
 import com.example.userservice.entity.Profile;
 import com.example.userservice.entity.User;
 import com.example.grpc.*;
+import com.example.userservice.exception.AuthenticationFailedException;
+import com.example.userservice.exception.IncorrectPasswordException;
+import com.example.userservice.exception.UserAlreadyExistsException;
+import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.repository.ImageRepository;
 import com.example.userservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -32,7 +36,7 @@ public class UserService {
     @Transactional
     public User registerUser(RegisterUserRequest request) {
         if (checkUsername(request.getUsername())) {
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException();
         }
 
         Image image = new Image();
@@ -72,29 +76,27 @@ public class UserService {
     }
 
     public User findUserByUserId(Long userId) {
-        return userRepository.findByIdWithProfileAndImage(userId).orElse(null);
+        return userRepository.findByIdWithProfileAndImage(userId).orElseThrow(UserNotFoundException::new);
     }
 
     public boolean checkUsername(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
 
-    public Map<String, Object> authenticateUser(String username, String rawPassword) {
+    public Long authenticateUser(String username, String rawPassword) {
         Optional<User> userOptional = userRepository.findByUsername(username);
-        Map<String, Object> responseData = new HashMap<>();
-
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             boolean authenticated = validatePassword(rawPassword, user.getPassword());
 
-            responseData.put("authenticated", authenticated);
-            responseData.put("userId", user.getId());
-
-            return responseData;
+            if (authenticated) {
+                return user.getId();
+            } else {
+                throw new AuthenticationFailedException();
+            }
+        } else {
+            throw new UserNotFoundException();
         }
-
-        responseData.put("authenticated", false);
-        return responseData;
     }
 
     @Transactional
@@ -108,10 +110,10 @@ public class UserService {
                 userRepository.save(user);
                 return Optional.of(newPassword);
             } else {
-                return Optional.of(currentPassword);
+                throw new IncorrectPasswordException();
             }
         }
-        return Optional.empty();
+        throw new UserNotFoundException();
     }
 
     @Transactional
@@ -132,7 +134,7 @@ public class UserService {
             userRepository.save(user);
             return user;
         } else {
-            throw new RuntimeException("User not found");
+            throw new UserNotFoundException();
         }
     }
 }
