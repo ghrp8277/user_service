@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-deployment
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: spring-user-container
+          image: 192.168.0.212:5555/spring-user:20240806-183215
+          ports:
+            - name: grpc
+              containerPort: 3090
+          volumeMounts:
+            - name: user-logs
+              mountPath: /usr/src/main/logs
+          env:
+            - name: DATABASE_HOST
+              value: "user-mysql-master-service"
+            - name: DATABASE_PORT
+              value: "3306"
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: testtest
+
+        - name: mysql-master-container
+          image: 192.168.0.212:5555/mysql:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: testtest
+            - name: MYSQL_DATABASE
+              value: main
+            - name: MYSQL_ALLOW_EMPTY_PASSWORD
+              value: "no"
+            - name: MYSQL_ROOT_HOST
+              value: "%"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: user-mysql-master-data
+              mountPath: /var/lib/mysql
+
+        - name: phpmyadmin-container
+          image: 192.168.0.212:5555/phpmyadmin/phpmyadmin
+          ports:
+            - containerPort: 80
+          env:
+            - name: PMA_HOST
+              value: "user-mysql-master-service"
+            - name: PMA_PORT
+              value: "3306"
+            - name: PMA_USER
+              value: root
+            - name: PMA_PASSWORD
+              value: testtest
+
+        - name: fluent-bit
+          image: 192.168.0.212:5555/fluent/fluent-bit
+          volumeMounts:
+            - name: user-fluent-config
+              mountPath: /fluent-bit/etc/fluent-bit.conf
+              subPath: fluent-bit.conf
+            - name: user-logs
+              mountPath: /usr/src/main/logs
+
+      volumes:
+        - name: user-logs
+          persistentVolumeClaim:
+            claimName: user-logs-pvc
+        - name: user-mysql-master-data
+          persistentVolumeClaim:
+            claimName: user-mysql-master-data-pvc
+        - name: user-fluent-config
+          configMap:
+            name: user-fluent-bit-config
