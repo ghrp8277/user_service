@@ -5,6 +5,11 @@ metadata:
   namespace: prod
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: user
@@ -15,7 +20,7 @@ spec:
     spec:
       containers:
         - name: spring-user-container
-          image: 192.168.0.212:5555/spring-user:20240806-183215
+          image: 192.168.0.212:5555/spring-user:20240812-185744
           ports:
             - name: grpc
               containerPort: 3090
@@ -31,6 +36,22 @@ spec:
               value: root
             - name: DATABASE_PASSWORD
               value: testtest
+          livenessProbe:
+            exec:
+              command:
+                - /app/grpc-health-probe
+                - -addr=:3090
+                - -rpc-timeout=2s
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - /app/grpc-health-probe
+                - -addr=:3090
+                - -rpc-timeout=2s
+            initialDelaySeconds: 10
+            periodSeconds: 30
 
         - name: mysql-master-container
           image: 192.168.0.212:5555/mysql:latest

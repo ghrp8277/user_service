@@ -7,12 +7,27 @@ option java_outer_classname = "UserProto";
 package user;
 
 service UserService {
+    rpc Check (HealthCheckRequest) returns (HealthCheckResponse);
     rpc CheckUsername (CheckUsernameRequest) returns (Response);
     rpc RegisterUser (RegisterUserRequest) returns (Response);
     rpc AuthenticateUser (AuthenticateUserRequest) returns (Response);
     rpc UpdatePassword (UpdatePasswordRequest) returns (Response);
     rpc findUser (FindUserRequest) returns (Response);
     rpc UpdateProfile (UpdateProfileRequest) returns (Response);
+}
+
+message HealthCheckRequest {
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;
+  }
+  ServingStatus status = 1;
 }
 
 message FindUserRequest {

@@ -22,6 +22,15 @@ public class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
     private GrpcResponseHelper grpcResponseHelper;
 
     @Override
+    public void check(HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
+        HealthCheckResponse response = HealthCheckResponse.newBuilder()
+                .setStatus(HealthCheckResponse.ServingStatus.SERVING)
+                .build();
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    @Override
     @GrpcExceptionHandler
     public void registerUser(RegisterUserRequest request, StreamObserver<Response> responseObserver) {
         User newUser = userService.registerUser(request);
