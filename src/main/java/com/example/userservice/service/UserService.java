@@ -4,11 +4,9 @@ import com.example.userservice.entity.Image;
 import com.example.userservice.entity.Profile;
 import com.example.userservice.entity.User;
 import com.example.grpc.*;
-import com.example.userservice.exception.AuthenticationFailedException;
-import com.example.userservice.exception.IncorrectPasswordException;
-import com.example.userservice.exception.UserAlreadyExistsException;
-import com.example.userservice.exception.UserNotFoundException;
+import com.example.userservice.exception.*;
 import com.example.userservice.repository.ImageRepository;
+import com.example.userservice.repository.ProfileRepository;
 import com.example.userservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -31,12 +29,19 @@ public class UserService {
     @Autowired
     private ImageRepository imageRepository;
 
+    @Autowired
+    private ProfileRepository profileRepository;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Transactional
     public User registerUser(RegisterUserRequest request) {
         if (checkUsername(request.getUsername())) {
             throw new UserAlreadyExistsException();
+        }
+
+        if (checkEmail(request.getEmail())) {
+            throw new EmailAlreadyExistsException();
         }
 
         Image image = new Image();
@@ -61,6 +66,10 @@ public class UserService {
         userRepository.save(user);
 
         return user;
+    }
+
+    public boolean checkEmail(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
 
     public String hashPassword(String rawPassword) {
