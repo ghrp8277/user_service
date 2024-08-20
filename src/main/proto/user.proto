@@ -8,6 +8,7 @@ package user;
 
 service UserService {
     rpc Check (HealthCheckRequest) returns (HealthCheckResponse);
+    rpc getUserById (GetUserByIdRequest) returns (Response);
     rpc CheckUsername (CheckUsernameRequest) returns (Response);
     rpc RegisterUser (RegisterUserRequest) returns (Response);
     rpc AuthenticateUser (AuthenticateUserRequest) returns (Response);
@@ -28,6 +29,10 @@ message HealthCheckResponse {
     SERVICE_UNKNOWN = 3;
   }
   ServingStatus status = 1;
+}
+
+message GetUserByIdRequest {
+  uint64 userId = 1;
 }
 
 message FindUserRequest {

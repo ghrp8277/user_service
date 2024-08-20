@@ -115,6 +115,10 @@ public class UserService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (validatePassword(currentPassword, user.getPassword())) {
+                if (validatePassword(newPassword, user.getPassword())) {
+                    throw new SameAsCurrentPasswordException();
+                }
+
                 user.setPassword(hashPassword(newPassword));
                 userRepository.save(user);
                 return Optional.of(newPassword);

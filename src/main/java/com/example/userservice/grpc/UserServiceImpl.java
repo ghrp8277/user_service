@@ -15,6 +15,8 @@ import java.util.Optional;
 
 @GrpcService
 public class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
+    private final String DEFAULT_RESULTS = "results";
+
     @Autowired
     private UserService userService;
 
@@ -28,6 +30,20 @@ public class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
                 .build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    @Override
+    @GrpcExceptionHandler
+    public void getUserById(GetUserByIdRequest request, StreamObserver<Response> responseObserver) {
+        User user = userService.findUserByUserId(request.getUserId());
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("id", user.getId());
+        responseData.put("username", user.getUsername());
+        responseData.put("email", user.getEmail());
+        responseData.put("joinDate", user.getJoinDate());
+        responseData.put("greeting", user.getProfile().getGreeting());
+        responseData.put("profileImageUrl", user.getProfile().getProfileImage().getPath());
+        grpcResponseHelper.sendJsonResponse(DEFAULT_RESULTS, responseData, responseObserver);
     }
 
     @Override
