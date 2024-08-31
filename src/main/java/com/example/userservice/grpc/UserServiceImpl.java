@@ -48,6 +48,16 @@ public class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
 
     @Override
     @GrpcExceptionHandler
+    public void getUserByUsername(GetUserByUsernameRequest request, StreamObserver<Response> responseObserver) {
+        User user = userService.findUserByUsername(request.getUsername());
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("id", user.getId());
+        responseData.put("username", user.getUsername());
+        grpcResponseHelper.sendJsonResponse(DEFAULT_RESULTS, responseData, responseObserver);
+    }
+
+    @Override
+    @GrpcExceptionHandler
     public void registerUser(RegisterUserRequest request, StreamObserver<Response> responseObserver) {
         User newUser = userService.registerUser(request);
         Map<String, Object> responseData = new HashMap<>();

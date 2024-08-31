@@ -92,6 +92,11 @@ public class UserService {
         return userRepository.findByUsername(username).isPresent();
     }
 
+
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+    }
+
     public Long authenticateUser(String username, String rawPassword) {
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isPresent()) {

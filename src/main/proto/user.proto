@@ -8,12 +8,13 @@ package user;
 
 service UserService {
     rpc Check (HealthCheckRequest) returns (HealthCheckResponse);
-    rpc getUserById (GetUserByIdRequest) returns (Response);
+    rpc GetUserById (GetUserByIdRequest) returns (Response);
+    rpc GetUserByUsername (GetUserByUsernameRequest) returns (Response);
     rpc CheckUsername (CheckUsernameRequest) returns (Response);
     rpc RegisterUser (RegisterUserRequest) returns (Response);
     rpc AuthenticateUser (AuthenticateUserRequest) returns (Response);
     rpc UpdatePassword (UpdatePasswordRequest) returns (Response);
-    rpc findUser (FindUserRequest) returns (Response);
+    rpc FindUser (FindUserRequest) returns (Response);
     rpc UpdateProfile (UpdateProfileRequest) returns (Response);
 }
 
@@ -33,6 +34,10 @@ message HealthCheckResponse {
 
 message GetUserByIdRequest {
   uint64 userId = 1;
+}
+
+message GetUserByUsernameRequest {
+  string username = 1;
 }
 
 message FindUserRequest {
